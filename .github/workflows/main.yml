@@ -7,32 +7,40 @@ on:
     branches:
       - main
   schedule:
-    - cron:  '30 2 * * 1-5'
-    - cron:  '27 15 * * 1-5'
+    - cron: '30 2 * * 1-5'
+    - cron: '27 15 * * 1-5'
 jobs:
   build:
     runs-on: ubuntu-latest
-    env: 
+    env:
       CI_COMMIT_MESSAGE: Updated Latest RiskFreeInterestRates Json File
       CI_COMMIT_AUTHOR: misterdas
     steps:
-    - uses: actions/checkout@v3
-    # Build steps
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10.x'
-    - run: python --version
-    - run: pip install -r requirements.txt
-    - run: python main.py
-      
-    # Commit and push all changed files.
-    - name: GIT Commit Build Artifacts (coverage, dist, devdist, docs)
-      # Only run on main branch push (e.g. after pull request merge).
-      if: contains(fromJson('["schedule", "push", "pull_request"]'), github.event_name)
-      run: |
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "misterdas@users.noreply.github.com"
-        git add --all
-        git diff --quiet && git diff --staged --quiet || git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
-        git pull --rebase origin main
-        git push
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for proper rebasing
+      # Build steps
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.x'
+      - run: python --version
+      - run: pip install -r requirements.txt
+      - run: python main.py
+
+      # Commit and push all changed files.
+      - name: GIT Commit Build Artifacts (coverage, dist, devdist, docs)
+        # Only run on main branch push (e.g., after pull request merge).
+        if: contains(fromJson('["schedule", "push", "pull_request"]'), github.event_name)
+        run: |
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "misterdas@users.noreply.github.com"
+          git add --all
+          # Commit if there are changes
+          git diff --quiet && git diff --staged --quiet || git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
+          # Pull with rebase to avoid conflicts
+          git pull --rebase origin main
+          # Push changes
+          git push
+        env:
+          GIT_COMMITTER_NAME: ${{ env.CI_COMMIT_AUTHOR }}
+          GIT_COMMITTER_EMAIL: misterdas@users.noreply.github.com
