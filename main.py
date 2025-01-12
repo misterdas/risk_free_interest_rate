@@ -1,14 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-    :description: A Python Script To Fetch The Government Securities Interest Rates From RBI Website.
-    :license: MIT.
-    :author: Dr June Moone
-    :created: On Monday November 28, 2022 11:17:53 GMT+05:30
-"""
-__author__ = "Dr June Moone"
-__webpage__ = "https://github.com/MooneDrJune"
-__license__ = "MIT"
-
 try:
     import requests
     import pandas as pd
@@ -22,7 +11,7 @@ except (ImportError, ModuleNotFoundError):
     from selectolax.parser import HTMLParser
 
 user_agent = requests.get(
-    "https://techfanetechnologies.github.io/latest-user-agent/user_agents.json"
+    "https://misterdas.github.io/risk_free_interest_rate/user_agents.json"
 ).json()[-2]
 
 headers = {
