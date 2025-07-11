@@ -24,27 +24,35 @@ def riskFreeInetrestRate(
     url: str = "https://www.rbi.org.in/",
 ) -> None:
     response = HTMLParser(requests.get(url, headers=headers).content)
-    selector = "#wrapper > div:nth-child(10) > table"
-    data = [node.html for node in response.css(selector)]
 
-    # Fix FutureWarning with StringIO
-    df = pd.read_html(StringIO(data[0]))[0].iloc[4:13]
-    df.columns = ["GovernmentSecurityName", "Percent"]
-    df.reset_index(inplace=True, drop=True)
+    gov_sec_data = []
 
-    # Clean whitespace and symbols
-    df["GovernmentSecurityName"] = df["GovernmentSecurityName"].str.strip()
-    df["Percent"] = df["Percent"].str.strip('%#* :')
+    for table in response.css("table"):
+        if "GS 2028" in table.text() and "91 day T-bills" in table.text():
+            for row in table.css("tr"):
+                cells = row.css("th, td")
+                if len(cells) == 2:
+                    name = cells[0].text().strip()
+                    rate = cells[1].text().strip().replace(":", "").replace("%", "").replace("*", "").replace("#", "")
+                    
+                    if "as on" not in name.lower() and "cut-off" not in name.lower():
+                        try:
+                            gov_sec_data.append({
+                                "GovernmentSecurityName": name,
+                                "Percent": float(rate)
+                            })
+                        except ValueError:
+                            pass
+            break
 
-    # Remove rows where 'Percent' is not a valid float
-    df = df[pd.to_numeric(df["Percent"], errors="coerce").notna()]
-
-    # Now safely convert to float
-    df = df.astype({'GovernmentSecurityName': 'str', 'Percent': 'float32'}, copy=False)
+    df = pd.DataFrame(gov_sec_data)
 
     # Save to JSON
     with open("RiskFreeInterestRate.json", "w") as jsonFile:
         jsonFile.write(df.to_json(orient='records'))
+
+    # Optional: preview raw HTML if needed
+    # print(df.to_string(index=False))
 
 if __name__ == "__main__":
     riskFreeInetrestRate()
