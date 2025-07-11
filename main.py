@@ -28,7 +28,7 @@ def riskFreeInetrestRate(
     gov_sec_data = []
 
     for table in response.css("table"):
-        if "GS 2028" in table.text() and "91 day T-bills" in table.text():
+        if "91 day T-bills" in table.text():
             for row in table.css("tr"):
                 cells = row.css("th, td")
                 if len(cells) == 2:
