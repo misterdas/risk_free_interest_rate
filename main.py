@@ -1,15 +1,15 @@
 try:
     import requests
     import pandas as pd
-    from selectolax.parser import HTMLParser
+    from selectolax.lexbor import LexborHTMLParser
     from io import StringIO
 except (ImportError, ModuleNotFoundError):
     __import__("os").system(
-        f"{__import__('sys').executable} -m pip install -U requests selectolax pandas json"
+        f"{__import__('sys').executable} -m pip install -U requests selectolax pandas"
     )
     import requests
     import pandas as pd
-    from selectolax.parser import HTMLParser
+    from selectolax.lexbor import LexborHTMLParser
     from io import StringIO
 
 user_agent = requests.get(
@@ -23,7 +23,7 @@ headers = {
 def riskFreeInetrestRate(
     url: str = "https://www.rbi.org.in/",
 ) -> None:
-    response = HTMLParser(requests.get(url, headers=headers).content)
+    response = LexborHTMLParser(requests.get(url, headers=headers).content)
 
     gov_sec_data = []
 
@@ -52,7 +52,7 @@ def riskFreeInetrestRate(
         jsonFile.write(df.to_json(orient='records'))
 
     # Optional: preview raw HTML if needed
-    # print(df.to_string(index=False))
+    print(df.to_string(index=False))
 
 if __name__ == "__main__":
     riskFreeInetrestRate()
